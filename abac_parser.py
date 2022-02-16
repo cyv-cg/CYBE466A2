@@ -1,3 +1,7 @@
+from resourceAttrib import resourceAttrib
+from userAttrib import userAttrib
+
+
 def parse(file):
 	f = open(file, "r")
 	lines = f.readlines()
@@ -8,20 +12,27 @@ def parse(file):
 			continue
 
 		terms = get_terms(l)
-
 		term_type = terms[0]
+
+		attributes = { }
 
 		if term_type != 'rule':
 			term_parameters = terms[1]
 			id = term_parameters[0]
 			term_parameters = term_parameters[1:len(term_parameters)]
 
-			print(f"type={term_type}, id={id}, parameters={term_parameters}")
+			if term_type == 'userAttrib':
+				attributes[id] = userAttrib(id, term_parameters)
+			elif term_type == 'resourceAttrib':
+				attributes[id] = resourceAttrib(id, term_parameters)
 		else:
 			print(terms)
+		
+	return attributes
 
 def get_terms(line):
 	try:
+		line = line.replace(")\n", "")
 		# This should return a list with 2 elements: the type of rule or attribute, and 
 		# all the stuff inside the parentheses.
 		components = line.split('(')
@@ -36,3 +47,24 @@ def get_terms(line):
 		
 	except Exception as e:
 		print(e)
+
+def parse_attrib(attributes):
+	# Initialize a dictionary for the attributes.
+	att = { }
+	# Process each string in the given list.
+	for a in attributes:
+		# Split at '=' to separate keys and values.
+		comps = a.split("=")
+		key = comps[0]
+		val = comps[1]
+
+		# If the value is surrounded by braces, then it is a multivalued attribute and should be assigned as a list.
+		if val[0] == '{' and val[len(val)-1] == '}':
+			# Remove the braces.
+			val = val.replace('{', '').replace('}', '')
+			# Split the value at a space to get the list of values.
+			val = val.split(' ')
+
+		att[key] = val
+
+	return att

@@ -1,6 +1,11 @@
+import abac_parser as p
+
 class resourceAttrib():
 	rid = ""
 
-	def __init__(self, rid, parameters):
+	attributes = { }
+
+	def __init__(self, rid, attributes):
 		self.rid = rid
-		print(f"resourceAttrib __init__({rid}, {parameters})")
+		self.attributes = p.parse_attrib(attributes)
+		print(f"resourceAttrib __init__({self.rid}, {self.attributes})")

@@ -1,6 +1,11 @@
+import abac_parser as p
+
 class userAttrib():
 	uid = ""
 
-	def __init__(self, uid, parameters):
+	attributes = { }
+
+	def __init__(self, uid, attributes):
 		self.uid = uid
-		print(f"userAttrib __init__({uid}, {parameters})")
+		self.attributes = p.parse_attrib(attributes)
+		print(f"userAttrib __init__({self.uid}, {self.attributes})")

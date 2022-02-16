@@ -148,4 +148,4 @@ rule(department [ {registrar}; type [ {transcript}; {read}; )
 rule(; type [ {application}; {checkStatus}; uid=student)
 
 # 10.	A user in the admissions office can read and update the status of every application. 
-rule(department [ {admissions}; type [ {application}; ; {read setStatus}; )
+rule(department [ {admissions}; type [ {application}; {read setStatus}; )
