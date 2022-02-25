@@ -58,5 +58,76 @@ class rule:
 				self.actionDict.update({i: [ruleTuple]})
 
 
+	def ruleCheck(self, desiredAction, subjectDict, resourceDict):
+		#Takes in the desired aciton, the appropriate subjectDictionary and resourceDictionary and will either confirm or deny the action under those circumstances
+		if desiredAction in self.actionDict:
+			possibleRule = self.actionDict[desiredAction]
+		else:
+			return False
+		foundMatch = False
+		#use foundMatch to check each possible failed condition for this action
+		for i in possibleRule:
+			#First checks the subject condition
+			if len(i[0]) >= 3:
+				sAtrib = i[0][0] #stores the attribute to be checked
+				sOp = i[0][1] #stores the operator to be checked with
+				if sOp == '[':
+					if subjectDict[sAtrib] in i[0][2]:
+						foundMatch = True
+				elif sOp == ']':
+					if i[0][2] in subjectDict[sAtrib]:
+						foundMatch = True 
+				else:
+					print("\n\n---------------\nYou've found a secret, this program is broken\n----------------\n\n")
+			#if the subject has matched a criteria, then checks that the subject matches its criteria
+			else:
+				foundMatch = True
+			if foundMatch and len(i[1]) >=3:
+				foundMatch = False
+				rAtrib = i[1][0] #stores attribute to be checked
+				rOp = i[1][1]	#Stores the operator to be used
+				if rOp == '[':
+					if resourceDict[rAtrib] in i[1][2]:
+						foundMatch = True
+				elif rOp == ']':
+					if i[1][2] in resourceDict[rAtrib]:
+						foundMatch = True 
+				else:
+					print("\n\n---------------\nYou've found a secret, this program is still broken\n----------------\n\n")
+			elif foundMatch:
+				pass
+			else:
+				foundMatch = False
+			if foundMatch and len(i[3]) >= 3:
+				foundMatch = False
+				compOp = i[3][1]
+				if compOp == '[':
+					if subjectDict[i[3][0]] in resourceDict[i[3][2]]:
+						foundMatch = True
+				elif compOp == ']':
+					if resourceDict[i[3][2]] in subjectDict[i[3][0]]:
+						foundMatch = True
+				elif compOp == '=':
+					if subjectDict[i[3][0]] == resourceDict[i[3][2]]:
+						foundMatch = True
+				elif compOp == '>':
+					foundMatch = True
+					for items in subjectDict[i[3][0]]:
+						if items not in resourceDict[i[3][2]]:
+							foundMatch = False
+				else:
+					print("\n\n----------------\Invalid comparison Operator \n----------------\n\n\n")
+			elif foundMatch:
+				pass
+			else:
+				foundMatch = False
+			#Will return true if all conditions are met
+			if foundMatch:
+				return True
+		#only gets here if there is not matching rule for that action
+		return False
+
+
+
 	def __str__(self) -> str:
 		return str(self.actionDict)
