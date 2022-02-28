@@ -10,6 +10,7 @@ class rule:
 
 	def addRule(self, ruleInfo):
 		#ruleInfo should contain the whole string of a rule for the ABAC policy  
+		ruleInfo= ruleInfo.strip()
 		ruleList = ruleInfo[5:len(ruleInfo)-1].split(";")
 		#first is to break the subject conditions into a tuple
 		#for the user tuple, I will also need a tuple for the potential grouping of values
@@ -125,10 +126,9 @@ class rule:
 			if foundMatch and len(i[3]) > 0: 
 				foundMatch = False
 				passes = 0
-				#print(i)#############################################################################################
 				for c in i[3]:
-					#print(subjectDict)#######################################################################################
 					if c[0] in subjectDict and c[2] in resourceDict:
+						# print("here")
 						subjArg = subjectDict[c[0]]
 						resArg = resourceDict[c[2]]
 						compOp = c[1]
@@ -152,7 +152,6 @@ class rule:
 							print("\n\n----------------\Invalid comparison Operator \n----------------\n\n\n")
 				if len(i[3]) == passes:
 					foundMatch = True
-				#else: print("cond2 Fail") #####################################################################################
 			elif foundMatch and len(i[3]) == 0:
 				pass
 			else:

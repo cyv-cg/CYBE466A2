@@ -112,7 +112,7 @@ resourceAttrib(eeStu5trans, student=eeStu5, departments={ee}, type=transcript)
 rule(; type [ {gradebook}; {readMyScores}; crsTaken ] crs)
 
 # 2.	The instructor or TA can add scores and read scores in the gradebook for courses that they are teaching. 
-rule(; type [ {gradebook}; {addScore readScore}; crsTaught ] crs;)
+rule(; type [ {gradebook}; {addScore readScore}; crsTaught ] crs)
 
 # 3.	The instructor for a course can change scores and assign final grades in the gradebook for that course.
 rule(position [ {faculty}; type [ {gradebook}; {changeScore assignGrade}; crsTaught ] crs)
