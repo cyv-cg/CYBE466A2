@@ -1,4 +1,4 @@
-import re 
+import re
 class rule:
 	"Stores a dictionary of actions and the rules associated with them for an ABAC policy"
 	pass 
@@ -14,25 +14,33 @@ class rule:
 		#first is to break the subject conditions into a tuple
 		#for the user tuple, I will also need a tuple for the potential grouping of values
 		if len(ruleList[0].strip()) > 1:
-			startIdx = ruleList[0].find("{")
-			endIdx = ruleList[0].find("}")
-			values = tuple(ruleList[0][startIdx+1:endIdx].split(" "))			 
-			#now add the tuple for values into the tuple for subject conditions
-			subjSplit = ruleList[0].strip().split(" ")
-			subjTuple = (subjSplit[0], subjSplit[1], values)
+			ruleSeperator = ruleList[0].split(",")
+			tupleList = []
+			for i in ruleSeperator:
+				startIdx = i.find("{")
+				endIdx = i.find("}")
+				values = tuple(i[startIdx+1:endIdx].split(" "))	 
+				#now add the tuple for values into the tuple for subject conditions
+				subjSplit = i.strip().split(" ")
+				tupleList.append((subjSplit[0], subjSplit[1], values))
+			subjTuple = tuple(tupleList)
 		else:
-			subjTuple = ()
+			subjTuple = (())
 		#second is to break the resource conditions into a tuple
 		#same as the user tuple, will need a value tuple for the resources
 		if len(ruleList[1].strip()) > 1:
-			startIdx = ruleList[1].find("{")
-			endIdx = ruleList[1].find("}")
-			reValues = tuple(ruleList[1][startIdx+1:endIdx].split(" "))
-			#now add the tuple for reValues into the tuple for resource conditions 
-			resSplit = ruleList[1].strip().split(" ")
-			resTuple = (resSplit[0], resSplit[1], reValues)
+			ruleSeperator = ruleList[1].split(''',''')
+			tupleList = []
+			for i in ruleSeperator:
+				startIdx = i.find("{")
+				endIdx = i.find("}")
+				reValues = tuple(i[startIdx+1:endIdx].split(" "))
+				#now add the tuple for reValues into the tuple for resource conditions 
+				resSplit = i.strip().split(" ")
+				tupleList.append((resSplit[0], resSplit[1], reValues))
+			resTuple = tuple(tupleList)
 		else:
-			resTuple = ()
+			resTuple = (())
 		#now there needs to be a tuple for the actions
 		if len(ruleList[2].strip()) > 1:
 			actionStr = ruleList[2].strip()
@@ -41,12 +49,16 @@ class rule:
 			actions = ()
 		#finally, conditionals are included as tuple 
 		if len(ruleList[3].strip()) > 1:
-			#Python has a whole different module for regex 
-			splitAt = re.search("[\[\]=>]",ruleList[3])
-			splitList = re.split("[\[\]=>]",ruleList[3])
-			conditions = (splitList[0].strip(), splitAt[0], splitList[1].strip())
+			ruleSeperator = ruleList[3].split(",")
+			seperatedTupleList = []
+			for i in ruleSeperator:
+				#Python has a whole different module for regex 
+				splitAt = re.search("[\[\]=>]",i)
+				splitList = re.split("[\[\]=>]",i)
+				seperatedTupleList.append((splitList[0].strip(), splitAt[0], splitList[1].strip()))
+			conditions = tuple(seperatedTupleList)
 		else:
-			conditions = ()
+			conditions = (())
 		#Now for the creation of a tuple of tuples, which will be stored in the dictionary, with the action tuple being used to find it
 		ruleTuple = (subjTuple, resTuple, actions, conditions)
 		#should result in dicitonary entries of type {"action": [(tuple)]}
@@ -59,7 +71,8 @@ class rule:
 
 
 	def ruleCheck(self, desiredAction, subjectDict, resourceDict):
-		#Takes in the desired aciton, the appropriate subjectDictionary and resourceDictionary and will either confirm or deny the action under those circumstances
+		#Takes in the desired aciton, the appropriate subjectTuple and resourceTuple and will either confirm or deny the action under those circumstances
+		#note that the tuples should be in form (ID, {attribute dictionary})
 		if desiredAction in self.actionDict:
 			possibleRule = self.actionDict[desiredAction]
 		else:
@@ -67,57 +80,74 @@ class rule:
 		foundMatch = False
 		#use foundMatch to check each possible failed condition for this action
 		for i in possibleRule:
-			#First checks the subject condition
-			if len(i[0]) >= 3:
-				sAtrib = i[0][0] #stores the attribute to be checked
-				sOp = i[0][1] #stores the operator to be checked with
-				if sOp == '[':
-					if subjectDict[sAtrib] in i[0][2]:
-						foundMatch = True
-				elif sOp == ']':
-					if i[0][2] in subjectDict[sAtrib]:
-						foundMatch = True 
-				else:
-					print("\n\n---------------\nYou've found a secret, this program is broken\n----------------\n\n")
+			#First checks the subject condition tuple
+			if len(i[0]) > 0:
+				passes = 0
+				for s in i[0]:
+					sAtrib = s[0] #stores the attribute to be checked
+					sOp = s[1] #stores the operator to be checked with
+					if sOp == '['and sAtrib in subjectDict:
+						if subjectDict[sAtrib] in s[2]:
+							passes += 1
+					elif sOp == ']' and sAtrib in subjectDict:
+						if s[2] in subjectDict[sAtrib]:
+							passes +=1  
+					else:
+						print("\n\n---------------\nYou've found a secret, this program is broken\n----------------\n\n")
+				if len(i[0]) == passes:
+					foundMatch = True
 			#if the subject has matched a criteria, then checks that the subject matches its criteria
-			else:
+			elif len(i[0]) == 0:
 				foundMatch = True
-			if foundMatch and len(i[1]) >=3:
+			if foundMatch and len(i[1]) > 0:
 				foundMatch = False
-				rAtrib = i[1][0] #stores attribute to be checked
-				rOp = i[1][1]	#Stores the operator to be used
-				if rOp == '[':
-					if resourceDict[rAtrib] in i[1][2]:
-						foundMatch = True
-				elif rOp == ']':
-					if i[1][2] in resourceDict[rAtrib]:
-						foundMatch = True 
-				else:
-					print("\n\n---------------\nYou've found a secret, this program is still broken\n----------------\n\n")
-			elif foundMatch:
+				passes = 0
+				for r in i[1]:
+					rAtrib = r[0] #stores attribute to be checked
+					rOp = r[1]	#Stores the operator to be used
+					if rOp == '[' and rAtrib in resourceDict:
+						if resourceDict[rAtrib] in r[2]:
+							passes +=1
+					elif rOp == ']' and rAtrib in resourceDict:
+						if r[2] in resourceDict[rAtrib]:
+							passes +=1
+					else:
+						print("\n\n---------------\nYou've found a secret, this program is still broken\n----------------\n\n")
+				if len(i[1]) == passes:
+					foundMatch = True
+			elif foundMatch and len(i[1]) == 0:
 				pass
 			else:
 				foundMatch = False
-			if foundMatch and len(i[3]) >= 3:
+			if foundMatch and len(i[3]) > 0: 
 				foundMatch = False
-				compOp = i[3][1]
-				if compOp == '[':
-					if subjectDict[i[3][0]] in resourceDict[i[3][2]]:
-						foundMatch = True
-				elif compOp == ']':
-					if resourceDict[i[3][2]] in subjectDict[i[3][0]]:
-						foundMatch = True
-				elif compOp == '=':
-					if subjectDict[i[3][0]] == resourceDict[i[3][2]]:
-						foundMatch = True
-				elif compOp == '>':
+				passes = 0
+				for c in i[3]:
+					if c[0] in subjectDict and c[2] in resourceDict:
+						subjArg = subjectDict[c[0]]
+						resArg = resourceDict[c[2]]
+						compOp = c[1]
+						if compOp == '[':
+							if subjArg in resArg:
+								passes +=1
+						elif compOp == ']':
+							if resArg in subjArg:
+								passes +=1
+						elif compOp == '=':
+							if subjArg == resArg:
+								passes +=1
+						elif compOp == '>':
+							subpass = 0
+							for items in resArg:
+								if items in subjArg:
+									subpass +=1
+							if len(resArg) == subpass:
+								passes +=1
+						else:
+							print("\n\n----------------\Invalid comparison Operator \n----------------\n\n\n")
+				if len(i[3]) == passes:
 					foundMatch = True
-					for items in subjectDict[i[3][0]]:
-						if items not in resourceDict[i[3][2]]:
-							foundMatch = False
-				else:
-					print("\n\n----------------\Invalid comparison Operator \n----------------\n\n\n")
-			elif foundMatch:
+			elif foundMatch and len(i[3]) == 0:
 				pass
 			else:
 				foundMatch = False
