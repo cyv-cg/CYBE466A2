@@ -1,3 +1,4 @@
 import abac_parser as p
+import rule
 
-p.parse("university.abac")
+attributes, rules = p.parse("university.abac")

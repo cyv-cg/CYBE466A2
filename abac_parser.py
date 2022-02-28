@@ -1,10 +1,13 @@
 from resourceAttrib import resourceAttrib
 from userAttrib import userAttrib
+import rule
 
 
 def parse(file):
 	f = open(file, "r")
 	lines = f.readlines()
+
+	rules = rule.rule()
 
 	for l in lines:
 		# Skip comments and blank lines.
@@ -25,10 +28,12 @@ def parse(file):
 				attributes[id] = userAttrib(id, term_parameters)
 			elif term_type == 'resourceAttrib':
 				attributes[id] = resourceAttrib(id, term_parameters)
+		elif term_type == 'rule':
+			rules.addRule(l)
 		else:
 			print(terms)
-		
-	return attributes
+	f.close()
+	return attributes, rules
 
 def get_terms(line):
 	try:
