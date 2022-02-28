@@ -1,0 +1,5 @@
+csStu1,cs101gradebook,addScore
+csStu1,cs101gradebook,readMyScores
+csStu2,cs601gradebook,addScore
+csStu2,cs602gradebook,addScore
+csStu3,cs602gradebook,readMyScores

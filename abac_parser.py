@@ -9,6 +9,7 @@ def parse(file):
 
 	rules = rule.rule()
 
+	attributes = { }
 	for l in lines:
 		# Skip comments and blank lines.
 		if l[0] == '#' or len(l.strip()) == 0:
@@ -17,7 +18,6 @@ def parse(file):
 		terms = get_terms(l)
 		term_type = terms[0]
 
-		attributes = { }
 
 		if term_type != 'rule':
 			term_parameters = terms[1]
@@ -25,13 +25,16 @@ def parse(file):
 			term_parameters = term_parameters[1:len(term_parameters)]
 
 			if term_type == 'userAttrib':
-				attributes[id] = userAttrib(id, term_parameters)
+				# attributes[id] = userAttrib(id, term_parameters)
+				attributes.update({id: userAttrib(id, term_parameters)})
 			elif term_type == 'resourceAttrib':
-				attributes[id] = resourceAttrib(id, term_parameters)
+				# attributes[id] = resourceAttrib(id, term_parameters)
+				attributes.update({id: resourceAttrib(id, term_parameters)})
 		elif term_type == 'rule':
 			rules.addRule(l)
 		else:
-			print(terms)
+			# print(terms)
+			pass
 	f.close()
 	return attributes, rules
 

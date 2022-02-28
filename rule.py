@@ -65,9 +65,12 @@ class rule:
 			#note that the tuples are in lists in case there are multiple rules that have that action associated with them
 		for i in actions:
 			if i in self.actionDict:
-				self.actionDict[i].append(ruleTuple)
+				tempList = self.actionDict[i]
+				tempList.append(ruleTuple)
+				self.actionDict.update({i: tempList})
 			else:
 				self.actionDict.update({i: [ruleTuple]})
+				
 
 
 	def ruleCheck(self, desiredAction, subjectDict, resourceDict):
@@ -122,7 +125,9 @@ class rule:
 			if foundMatch and len(i[3]) > 0: 
 				foundMatch = False
 				passes = 0
+				#print(i)#############################################################################################
 				for c in i[3]:
+					#print(subjectDict)#######################################################################################
 					if c[0] in subjectDict and c[2] in resourceDict:
 						subjArg = subjectDict[c[0]]
 						resArg = resourceDict[c[2]]
@@ -147,6 +152,7 @@ class rule:
 							print("\n\n----------------\Invalid comparison Operator \n----------------\n\n\n")
 				if len(i[3]) == passes:
 					foundMatch = True
+				#else: print("cond2 Fail") #####################################################################################
 			elif foundMatch and len(i[3]) == 0:
 				pass
 			else:
@@ -156,8 +162,6 @@ class rule:
 				return True
 		#only gets here if there is not matching rule for that action
 		return False
-
-
 
 	def __str__(self) -> str:
 		return str(self.actionDict)

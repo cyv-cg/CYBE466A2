@@ -1,0 +1,9 @@
+oncNurse2,oncPat2HR,addItem
+oncDoc1,oncPat2HR,addNote
+carDoc2,carPat1HR,addItem
+oncPat1,oncPat2HR,addNote
+carDoc2,carPat2carItem,read
+oncDoc1,oncPat1oncItem,read
+oncDoc1,oncPat1oncItem,read
+carDoc1,carPat2carItem,read
+carDoc2,carPat2carItem,modify

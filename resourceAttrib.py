@@ -7,4 +7,4 @@ class resourceAttrib():
 	def __init__(self, rid, attributes):
 		self.attributes = p.parse_attrib(attributes)
 		self.attributes['rid'] = rid
-		print(f"resourceAttrib __init__({self.attributes['rid']}, {self.attributes})")
+		# print(f"resourceAttrib __init__({self.attributes['rid']}, {self.attributes})")
